@@ -13,60 +13,88 @@ import java.util.Set;
  */
 
 public class OutbountDTO {
+
     @SerializedName("OutboundID")
     private String outboundID;
+
     @SerializedName("PickRefNo")
     private List<String> pickRefNo;
+
     @SerializedName("MRP")
     private String MRP;
+
     @SerializedName("MOP")
     private String MOP;
+
     @SerializedName("SKU")
     private String SKU;
+
     @SerializedName("SerialNo")
     private String serialNo;
+
     @SerializedName("MfgDate")
     private String MfgDate;
+
     @SerializedName("Location")
     private String location;
+
     @SerializedName("LoadList")
     private List<LoadDTO> LoadList;
+
     @SerializedName("PalletNo")
     private String palletNo;
+
     @SerializedName("UserId")
     private String userId;
+
     @SerializedName("IsMaterialDamaged")
     private Boolean isMaterialDamaged;
+
     @SerializedName("IsMaterialNotFound")
     private Boolean isMaterialNotFound;
+
     @SerializedName("Result")
     private String result;
+
     @SerializedName("RequiredQty")
     private String requiredQty;
+
     @SerializedName("PickedQty")
     private String pickedQty;
+
     @SerializedName("SelectedPickRefNumber")
     private String SelectedPickRefNumber;
+
     @SerializedName("SelectedLoadSheetNumber")
     private String SelectedLoadSheetNumber;
+
     @SerializedName("AllowNestedInventoryDispatch")
     private Boolean AllowNestedInventoryDispatch;
+
     @SerializedName("AllowDispatchOfOLDMRP")
     private Boolean AllowDispatchOfOLDMRP;
+
     @SerializedName("AllowCrossDocking")
     private Boolean AllowCrossDocking;
+
     @SerializedName("StrictComplianceToPicking")
     private Boolean StrictComplianceToPicking;
+
     @SerializedName("AutoReconsileInventoryOnSkip")
     private Boolean AutoReconsileInventoryOnSkip;
+
     @SerializedName("DockNumber")
     private String dockNumber;
+
     @SerializedName("SuggestionID")
     private String SuggestionID;
+
     @SerializedName("RevertQty")
     private String RevertQty;
+
     @SerializedName("CustomerCode")
     private String CustomerCode;
+
     @SerializedName("MaterialMasterId")
     private String MaterialMasterId;
 
@@ -88,10 +116,8 @@ public class OutbountDTO {
     @SerializedName("ExpDate")
     private String expDate;
 
-
     @SerializedName("ProjectNo")
     private String projectNo;
-
 
     @SerializedName("SkipReason")
     private String skipReason;
@@ -114,9 +140,9 @@ public class OutbountDTO {
     @SerializedName("AccountId")
     private String accountId;
 
-
     @SerializedName("MCode")
     private String mCode;
+
     @SerializedName("MDescription")
     private String mDescription;
 
@@ -128,7 +154,6 @@ public class OutbountDTO {
 
     @SerializedName("SODetailsID")
     private String SODetailsID;
-
 
     @SerializedName("POSOHeaderId")
     private String pOSOHeaderId;
@@ -148,7 +173,6 @@ public class OutbountDTO {
     @SerializedName("LocationId")
     private String locationId;
 
-
     @SerializedName("CartonID")
     private String cartonID;
 
@@ -166,12 +190,9 @@ public class OutbountDTO {
 
     @SerializedName("PickedId")
     private String PickedId;
+
     @SerializedName("AccountID")
     private String AccountID;
-
-
-
-
 
 
     public OutbountDTO() {

@@ -12,13 +12,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.cipherlab.barcode.GeneralString;
@@ -40,6 +44,7 @@ import com.inventrax.falconsl_new.common.constants.ErrorMessages;
 import com.inventrax.falconsl_new.interfaces.ApiInterface;
 import com.inventrax.falconsl_new.pojos.HouseKeepingDTO;
 import com.inventrax.falconsl_new.pojos.InventoryDTO;
+import com.inventrax.falconsl_new.pojos.ScanDTO;
 import com.inventrax.falconsl_new.pojos.WMSCoreMessage;
 import com.inventrax.falconsl_new.pojos.WMSExceptionMessage;
 import com.inventrax.falconsl_new.searchableSpinner.SearchableSpinner;
@@ -76,6 +81,8 @@ public class LiveStockFragment extends Fragment implements View.OnClickListener,
     private Button btnSearch, btnClear;
     private RecyclerView recyclerViewLiveStock;
     private LinearLayoutManager linearLayoutManager;
+    private RadioButton radioLocation,radioPallet,radioSKU;
+    RadioGroup radioGroup;
 
     String scanner = null;
     private IntentFilter filter;
@@ -128,6 +135,8 @@ public class LiveStockFragment extends Fragment implements View.OnClickListener,
         userId = sp.getString("RefUserId", "");
         scanType = sp.getString("scanType", "");
         accountId = sp.getString("AccountId", "");
+        warehouseId = String.valueOf(sp.getInt("WarehouseID", 0));
+        tenantId =String.valueOf( sp.getInt("TenantID", 0));
 
         cvScanRSN = (CardView) rootView.findViewById(R.id.cvScanRSN);
         cvScanLocation = (CardView) rootView.findViewById(R.id.cvScanLocation);
@@ -143,6 +152,13 @@ public class LiveStockFragment extends Fragment implements View.OnClickListener,
         tvScanRSN = (TextView) rootView.findViewById(R.id.tvScanRSN);
         tvScanLocation = (TextView) rootView.findViewById(R.id.tvScanLocation);
         tvScanPallet = (TextView) rootView.findViewById(R.id.tvScanPallet);
+
+        radioLocation = (RadioButton) rootView.findViewById(R.id.radioLocation);
+        radioPallet = (RadioButton) rootView.findViewById(R.id.radioPallet);
+        radioSKU = (RadioButton) rootView.findViewById(R.id.radioSKU);
+
+        radioGroup = (RadioGroup) rootView.findViewById(R.id.radioGroup);
+
         lblScannedData = (TextView) rootView.findViewById(R.id.lblScannedData);
 
         lstTenants = new ArrayList<HouseKeepingDTO>();
@@ -221,7 +237,45 @@ public class LiveStockFragment extends Fragment implements View.OnClickListener,
         });
 
         // To get Tenants
-        getTenants();
+       // getTenants();
+
+
+        radioLocation.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(b){
+                    radioLocation.setChecked(true);
+                    radioPallet.setChecked(false);
+                    radioSKU.setChecked(false);
+                    clearFields();
+                }
+
+            }
+        });
+
+        radioPallet.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(b) {
+                    radioLocation.setChecked(false);
+                    radioPallet.setChecked(true);
+                    radioSKU.setChecked(false);
+                    clearFields();
+                }
+            }
+        });
+
+        radioSKU.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(b) {
+                    radioLocation.setChecked(false);
+                    radioPallet.setChecked(false);
+                    radioSKU.setChecked(true);
+                    clearFields();
+                }
+            }
+        });
 
     }
 
@@ -350,7 +404,57 @@ public class LiveStockFragment extends Fragment implements View.OnClickListener,
 
         if (scannedData != null) {
 
-            if (ScanValidator.isContainerScanned(scannedData)) {
+            if(radioLocation.isChecked()){
+                ValidateLocation(scannedData);
+                // Validate Location
+               // validateLocationCode();
+                return;
+            }
+
+            if(radioPallet.isChecked()){
+
+               // validatePalletCode();
+                ValidatePallet(scannedData);
+                return;
+            }
+
+            if(radioSKU.isChecked()){
+
+                // Validate Material
+                //validateMaterial();
+                ValiDateMaterial(scannedData);
+            }
+
+
+/*            if(selectedId==R.id.radioLocation){
+                tvScanLocation.setText(scannedData);
+                scannedLocation = scannedData;
+                // Validate Location
+                validateLocationCode();
+                return;
+            }
+
+            if(selectedId==R.id.radioPallet){
+                tvScanPallet.setText(scannedData);
+                scannedPallet = scannedData;
+                validatePalletCode();
+                return;
+            }
+
+            if(selectedId==R.id.radioSKU){
+                lblScannedData.setText(scannedData.split("[|]")[0]);
+                scannedSKU = scannedData.split("[|]")[0];
+                batch = scannedData.split("[|]")[1];
+                serialNo = scannedData.split("[|]")[2];
+                mfg = scannedData.split("[|]")[3];
+                exp = scannedData.split("[|]")[4];
+                prjRef = scannedData.split("[|]")[5];
+                mrp = scannedData.split("[|]")[7];
+                // Validate Material
+                validateMaterial();
+            }*/
+
+/*            if (ScanValidator.isContainerScanned(scannedData)) {
 
                 tvScanPallet.setText(scannedData);
 
@@ -374,6 +478,7 @@ public class LiveStockFragment extends Fragment implements View.OnClickListener,
 
                 // Validate Material
                 validateMaterial();
+
                 return;
             }
 
@@ -387,7 +492,7 @@ public class LiveStockFragment extends Fragment implements View.OnClickListener,
 
                 return;
 
-            }
+            }*/
         }
     }
 
@@ -696,8 +801,426 @@ public class LiveStockFragment extends Fragment implements View.OnClickListener,
         }
     }
 
+    public void ValiDateMaterial(final String scannedData) {
+        try {
 
-    public void validateLocationCode() {
+            WMSCoreMessage message = new WMSCoreMessage();
+            message = common.SetAuthentication(EndpointConstants.ScanDTO, getContext());
+            ScanDTO scanDTO = new ScanDTO();
+            scanDTO.setUserID(userId);
+            scanDTO.setAccountID(accountId);
+            scanDTO.setTenantID(String.valueOf(tenantId));
+            scanDTO.setWarehouseID(String.valueOf(warehouseId));
+            scanDTO.setScanInput(scannedData);
+          //  scanDTO.setInboundID(inboundId);
+            //inboundDTO.setIsOutbound("0");
+            message.setEntityObject(scanDTO);
+
+            Log.v("ABCDE",new Gson().toJson(message));
+
+            Call<String> call = null;
+            ApiInterface apiService = RestService.getClient().create(ApiInterface.class);
+
+            try {
+                //Checking for Internet Connectivity
+                // if (NetworkUtils.isInternetAvailable()) {
+                // Calling the Interface method
+                call = apiService.ValiDateMaterial(message);
+                ProgressDialogUtils.showProgressDialog("Please Wait");
+                // } else {
+                // DialogUtils.showAlertDialog(getActivity(), "Please enable internet");
+                // return;
+                // }
+
+            } catch (Exception ex) {
+                try {
+                    exceptionLoggerUtils.createExceptionLog(ex.toString(), classCode, "002_01", getActivity());
+                    logException();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                ProgressDialogUtils.closeProgressDialog();
+                DialogUtils.showAlertDialog(getActivity(), errorMessages.EMC_0002);
+            }
+            try {
+                //Getting response from the method
+                call.enqueue(new Callback<String>() {
+
+                    @Override
+                    public void onResponse(Call<String> call, Response<String> response) {
+                        core = gson.fromJson(response.body().toString(), WMSCoreMessage.class);
+
+                        if ((core.getType().toString().equals("Exception"))) {
+                            List<LinkedTreeMap<?, ?>> _lExceptions = new ArrayList<LinkedTreeMap<?, ?>>();
+                            _lExceptions = (List<LinkedTreeMap<?, ?>>) core.getEntityObject();
+
+                            WMSExceptionMessage owmsExceptionMessage = null;
+                            for (int i = 0; i < _lExceptions.size(); i++) {
+
+                                owmsExceptionMessage = new WMSExceptionMessage(_lExceptions.get(i).entrySet());
+                            }
+                            scannedSKU = "";
+                            cvScanRSN.setCardBackgroundColor(getResources().getColor(R.color.skuColor));
+                            ivScanRSN.setImageResource(R.drawable.fullscreen_img);
+                            ProgressDialogUtils.closeProgressDialog();
+                            common.showAlertType(owmsExceptionMessage, getActivity(), getContext());
+                        } else {
+                            LinkedTreeMap<?, ?>_lResult = new LinkedTreeMap<>();
+                            _lResult = (LinkedTreeMap<?, ?>) core.getEntityObject();
+
+                            Log.v("ABCDE",new Gson().toJson(_lResult));
+
+                            ScanDTO scanDTO1=new ScanDTO(_lResult.entrySet());
+                            ProgressDialogUtils.closeProgressDialog();
+                            if(scanDTO1!=null){
+                                if(scanDTO1.getScanResult()){
+
+                                /* ----For RSN reference----
+                                    0 Sku|1 BatchNo|2 SerialNO|3 MFGDate|4 EXpDate|5 ProjectRefNO|6 Kit Id|7 line No|8 MRP ---- For SKU with 9 MSP's
+
+                                    0 Sku|1 BatchNo|2 SerialNO|3 KitId|4 lineNo  ---- For SKU with 5 MSP's   *//*
+                                    // Eg. : ToyCar|1|bat1|ser123|12/2/2018|12/2/2019|0|001*/
+
+                                    cvScanRSN.setCardBackgroundColor(getResources().getColor(R.color.skuColor));
+                                    ivScanRSN.setImageResource(R.drawable.fullscreen_img);
+
+                                    /*    if (scannedData.split("[|]").length != 5) {*/
+
+                                    /*Materialcode = scanDTO1.getSkuCode();
+                                    etBatch.setText(scanDTO1.getBatch());
+                                    etSerial.setText(scanDTO1.getSerialNumber());
+                                    etMfgDate.setText(scanDTO1.getMfgDate());
+                                    etExpDate.setText(scanDTO1.getExpDate());
+                                    etPrjRef.setText(scanDTO1.getPrjRef());
+                                    etKidID.setText(scanDTO1.getKitID());
+                                    etMRP.setText(scanDTO1.getMrp());
+                                    lineNo = scanDTO1.getLineNumber();*/
+                                    //supplierInvoiceDetailsId = scanDTO1.getSupplierInvoiceDetailsID();
+
+                                    lblScannedData.setText(scanDTO1.getSkuCode());
+                                    scannedSKU = scanDTO1.getSkuCode();
+                                    batch = scanDTO1.getBatch();
+                                    serialNo = scanDTO1.getSerialNumber();
+                                    mfg = scanDTO1.getMfgDate();
+                                    exp = scanDTO1.getExpDate();
+                                    prjRef = scanDTO1.getPrjRef();
+                                    prjRef = scanDTO1.getPrjRef();
+                                    mrp = scanDTO1.getMrp();
+                                    isSKUScanned = true;
+                                    cvScanRSN.setCardBackgroundColor(getResources().getColor(R.color.white));
+                                    ivScanRSN.setImageResource(R.drawable.check);
+
+
+                                    //   etMRP.setText(scannedData.split("[|]")[7]);
+
+
+/*                                    } else {
+                                        Materialcode = scannedData.split("[|]")[0];
+                                        etBatch.setText(scannedData.split("[|]")[1]);
+                                        etSerial.setText(scannedData.split("[|]")[2]);
+                                        etKidID.setText(scannedData.split("[|]")[3]);
+                                        lineNo = scannedData.split("[|]")[4];
+                                    }*/
+
+
+
+
+/*                                    if (scanType.equals("Auto")) {
+                                        etQty.setText("1");
+                                        getReceivedQty();          // To get the pending and received quantities
+                                        return;
+                                    } else {
+                                        // for Manual mode
+                                        etQty.setEnabled(true);
+                                        btnReceive.setEnabled(true);
+                                        btnReceive.setTextColor(getResources().getColor(R.color.white));
+                                        btnReceive.setBackgroundResource(R.drawable.button_shape);
+                                        lblInboundQty.setText("");
+                                        getreceivedQty();           // To get the pending and received quantities
+                                    }*/
+                                } else{
+                                    scannedSKU = "";
+                                    cvScanRSN.setCardBackgroundColor(getResources().getColor(R.color.white));
+                                    ivScanRSN.setImageResource(R.drawable.warning_img);
+                                    common.showUserDefinedAlertType(errorMessages.EMC_0009, getActivity(), getContext(), "Warning");
+                                }
+                            }else{
+                                common.showUserDefinedAlertType("Error while getting data", getActivity(), getContext(), "Error");
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<String> call, Throwable throwable) {
+                        //Toast.makeText(LoginActivity.this, throwable.toString(), Toast.LENGTH_LONG).show();
+                        ProgressDialogUtils.closeProgressDialog();
+                        DialogUtils.showAlertDialog(getActivity(), errorMessages.EMC_0001);
+                    }
+                });
+            } catch (Exception ex) {
+                try {
+                    exceptionLoggerUtils.createExceptionLog(ex.toString(), classCode, "002_02", getActivity());
+                    logException();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                ProgressDialogUtils.closeProgressDialog();
+                DialogUtils.showAlertDialog(getActivity(), errorMessages.EMC_0001);
+            }
+        } catch (Exception ex) {
+            try {
+                exceptionLoggerUtils.createExceptionLog(ex.toString(), classCode, "002_03", getActivity());
+                logException();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            ProgressDialogUtils.closeProgressDialog();
+            DialogUtils.showAlertDialog(getActivity(), errorMessages.EMC_0002);
+        }
+    }
+
+    public void ValidateLocation(final String scannedData) {
+
+        try {
+
+            WMSCoreMessage message = new WMSCoreMessage();
+            message = common.SetAuthentication(EndpointConstants.ScanDTO, getContext());
+            ScanDTO scanDTO = new ScanDTO();
+            scanDTO.setUserID(userId);
+            scanDTO.setAccountID(accountId);
+            scanDTO.setTenantID(String.valueOf(tenantId));
+            scanDTO.setWarehouseID(String.valueOf(warehouseId));
+            scanDTO.setScanInput(scannedData);
+         //   scanDTO.setInboundID(inboundId);
+            // inboundDTO.setIsOutbound("0");
+            message.setEntityObject(scanDTO);
+
+
+            Call<String> call = null;
+            ApiInterface apiService = RestService.getClient().create(ApiInterface.class);
+
+            try {
+                //Checking for Internet Connectivity
+                // if (NetworkUtils.isInternetAvailable()) {
+                // Calling the Interface method
+                call = apiService.ValidateLocation(message);
+                ProgressDialogUtils.showProgressDialog("Please Wait");
+                // } else {
+                // DialogUtils.showAlertDialog(getActivity(), "Please enable internet");
+                // return;
+                // }
+
+            } catch (Exception ex) {
+                try {
+                    exceptionLoggerUtils.createExceptionLog(ex.toString(), classCode, "002_01", getActivity());
+                    logException();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                ProgressDialogUtils.closeProgressDialog();
+                DialogUtils.showAlertDialog(getActivity(), errorMessages.EMC_0002);
+            }
+            try {
+                //Getting response from the method
+                call.enqueue(new Callback<String>() {
+
+                    @Override
+                    public void onResponse(Call<String> call, Response<String> response) {
+                        core = gson.fromJson(response.body().toString(), WMSCoreMessage.class);
+
+                        if ((core.getType().toString().equals("Exception"))) {
+                            List<LinkedTreeMap<?, ?>> _lExceptions = new ArrayList<LinkedTreeMap<?, ?>>();
+                            _lExceptions = (List<LinkedTreeMap<?, ?>>) core.getEntityObject();
+
+                            WMSExceptionMessage owmsExceptionMessage = null;
+                            for (int i = 0; i < _lExceptions.size(); i++) {
+
+                                owmsExceptionMessage = new WMSExceptionMessage(_lExceptions.get(i).entrySet());
+                            }
+
+                            tvScanLocation.setText("");
+                            cvScanLocation.setCardBackgroundColor(getResources().getColor(R.color.white));
+                            ivScanLocation.setImageResource(R.drawable.invalid_cross);
+                            ProgressDialogUtils.closeProgressDialog();
+                            common.showAlertType(owmsExceptionMessage, getActivity(), getContext());
+                        } else {
+                            LinkedTreeMap<?, ?>_lResult = new LinkedTreeMap<>();
+                            _lResult = (LinkedTreeMap<?, ?>) core.getEntityObject();
+
+                            ScanDTO scanDTO1=new ScanDTO(_lResult.entrySet());
+
+                            if(scanDTO1!=null){
+                                if(scanDTO1.getScanResult()){
+                                    isLocationScanned = true;
+                                    tvScanLocation.setText(scannedData);
+                                    cvScanLocation.setCardBackgroundColor(getResources().getColor(R.color.white));
+                                    ivScanLocation.setImageResource(R.drawable.check);
+                                    tvScanLocation.setText(scannedData);
+                                    scannedLocation = scannedData;
+                                } else{
+                                    tvScanLocation.setText("");
+
+                                    cvScanLocation.setCardBackgroundColor(getResources().getColor(R.color.white));
+                                    ivScanLocation.setImageResource(R.drawable.warning_img);
+                                    common.showUserDefinedAlertType(errorMessages.EMC_0010, getActivity(), getContext(), "Warning");
+                                }
+                            }else{
+                                common.showUserDefinedAlertType("Error while getting data", getActivity(), getContext(), "Error");
+                            }
+                            ProgressDialogUtils.closeProgressDialog();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<String> call, Throwable throwable) {
+                        //Toast.makeText(LoginActivity.this, throwable.toString(), Toast.LENGTH_LONG).show();
+                        ProgressDialogUtils.closeProgressDialog();
+                        DialogUtils.showAlertDialog(getActivity(), errorMessages.EMC_0001);
+                    }
+                });
+            } catch (Exception ex) {
+                try {
+                    exceptionLoggerUtils.createExceptionLog(ex.toString(), classCode, "002_02", getActivity());
+                    logException();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                ProgressDialogUtils.closeProgressDialog();
+                DialogUtils.showAlertDialog(getActivity(), errorMessages.EMC_0001);
+            }
+        } catch (Exception ex) {
+            try {
+                exceptionLoggerUtils.createExceptionLog(ex.toString(), classCode, "002_03", getActivity());
+                logException();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            ProgressDialogUtils.closeProgressDialog();
+            DialogUtils.showAlertDialog(getActivity(), errorMessages.EMC_0002);
+        }
+    }
+
+    public void ValidatePallet(final String scannedData) {
+        try {
+
+            WMSCoreMessage message = new WMSCoreMessage();
+            message = common.SetAuthentication(EndpointConstants.ScanDTO, getContext());
+            ScanDTO scanDTO = new ScanDTO();
+            scanDTO.setUserID(userId);
+            scanDTO.setAccountID(accountId);
+            scanDTO.setTenantID(String.valueOf(tenantId));
+            scanDTO.setWarehouseID(String.valueOf(warehouseId));
+            scanDTO.setScanInput(scannedData);
+           // scanDTO.setInboundID(inboundId);
+            //inboundDTO.setIsOutbound("0");
+            message.setEntityObject(scanDTO);
+
+
+            Call<String> call = null;
+            ApiInterface apiService = RestService.getClient().create(ApiInterface.class);
+
+            try {
+                //Checking for Internet Connectivity
+                // if (NetworkUtils.isInternetAvailable()) {
+                // Calling the Interface method
+                call = apiService.ValidatePallet(message);
+                ProgressDialogUtils.showProgressDialog("Please Wait");
+                // } else {
+                // DialogUtils.showAlertDialog(getActivity(), "Please enable internet");
+                // return;
+                // }
+
+            } catch (Exception ex) {
+                try {
+                    exceptionLoggerUtils.createExceptionLog(ex.toString(), classCode, "002_01", getActivity());
+                    logException();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                ProgressDialogUtils.closeProgressDialog();
+                DialogUtils.showAlertDialog(getActivity(), errorMessages.EMC_0002);
+            }
+            try {
+                //Getting response from the method
+                call.enqueue(new Callback<String>() {
+
+                    @Override
+                    public void onResponse(Call<String> call, Response<String> response) {
+                        core = gson.fromJson(response.body().toString(), WMSCoreMessage.class);
+
+                        if ((core.getType().toString().equals("Exception"))) {
+                            List<LinkedTreeMap<?, ?>> _lExceptions = new ArrayList<LinkedTreeMap<?, ?>>();
+                            _lExceptions = (List<LinkedTreeMap<?, ?>>) core.getEntityObject();
+
+                            WMSExceptionMessage owmsExceptionMessage = null;
+                            for (int i = 0; i < _lExceptions.size(); i++) {
+
+                                owmsExceptionMessage = new WMSExceptionMessage(_lExceptions.get(i).entrySet());
+                            }
+
+                            tvScanPallet.setText("");
+                            cvScanPallet.setCardBackgroundColor(getResources().getColor(R.color.white));
+                            ivScanPallet.setImageResource(R.drawable.invalid_cross);
+                            ProgressDialogUtils.closeProgressDialog();
+                            common.showAlertType(owmsExceptionMessage, getActivity(), getContext());
+                        } else {
+                            LinkedTreeMap<?, ?>_lResult = new LinkedTreeMap<>();
+                            _lResult = (LinkedTreeMap<?, ?>) core.getEntityObject();
+
+                            ScanDTO scanDTO1=new ScanDTO(_lResult.entrySet());
+                            ProgressDialogUtils.closeProgressDialog();
+                            if(scanDTO1!=null){
+                                if(scanDTO1.getScanResult()){
+                                    isPalletScanned=true;
+                                    tvScanPallet.setText(scannedData);
+                                    scannedPallet = scannedData;
+                                    cvScanPallet.setCardBackgroundColor(getResources().getColor(R.color.white));
+                                    ivScanPallet.setImageResource(R.drawable.check);
+                                } else{
+                                    tvScanPallet.setText("");
+                                    cvScanPallet.setCardBackgroundColor(getResources().getColor(R.color.white));
+                                    ivScanPallet.setImageResource(R.drawable.warning_img);
+                                    common.showUserDefinedAlertType(errorMessages.EMC_0009, getActivity(), getContext(), "Warning");
+                                }
+                            }else{
+                                tvScanPallet.setText("");
+                                common.showUserDefinedAlertType("Error while getting data", getActivity(), getContext(), "Error");
+                            }
+
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<String> call, Throwable throwable) {
+                        //Toast.makeText(LoginActivity.this, throwable.toString(), Toast.LENGTH_LONG).show();
+                        ProgressDialogUtils.closeProgressDialog();
+                        DialogUtils.showAlertDialog(getActivity(), errorMessages.EMC_0001);
+                    }
+                });
+            } catch (Exception ex) {
+                try {
+                    exceptionLoggerUtils.createExceptionLog(ex.toString(), classCode, "002_02", getActivity());
+                    logException();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                ProgressDialogUtils.closeProgressDialog();
+                DialogUtils.showAlertDialog(getActivity(), errorMessages.EMC_0001);
+            }
+        } catch (Exception ex) {
+            try {
+                exceptionLoggerUtils.createExceptionLog(ex.toString(), classCode, "002_03", getActivity());
+                logException();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            ProgressDialogUtils.closeProgressDialog();
+            DialogUtils.showAlertDialog(getActivity(), errorMessages.EMC_0002);
+        }
+    }
+
+
+/*    public void validateLocationCode() {
         try {
 
             WMSCoreMessage message = new WMSCoreMessage();
@@ -711,8 +1234,7 @@ public class LiveStockFragment extends Fragment implements View.OnClickListener,
             message.setEntityObject(inventoryDTO);
 
             Call<String> call = null;
-            ApiInterface apiService =
-                    RestService.getClient().create(ApiInterface.class);
+            ApiInterface apiService = RestService.getClient().create(ApiInterface.class);
 
             try {
                 //Checking for Internet Connectivity
@@ -817,8 +1339,7 @@ public class LiveStockFragment extends Fragment implements View.OnClickListener,
             ProgressDialogUtils.closeProgressDialog();
             common.showUserDefinedAlertType(errorMessages.EMC_0003, getActivity(), getContext(), "Error");
         }
-    }
-
+    }*/
 
     public void validatePalletCode() {
         try {
@@ -945,7 +1466,6 @@ public class LiveStockFragment extends Fragment implements View.OnClickListener,
         }
     }
 
-
     public void validateMaterial() {
         try {
 
@@ -1022,9 +1542,7 @@ public class LiveStockFragment extends Fragment implements View.OnClickListener,
 
                                 dto = new InventoryDTO(_lResult.get(i).entrySet());
                                 if (dto.getResult().equals("1")) {
-
                                     isSKUScanned = true;
-
                                     cvScanRSN.setCardBackgroundColor(getResources().getColor(R.color.white));
                                     ivScanRSN.setImageResource(R.drawable.check);
                                 } else {
@@ -1130,10 +1648,7 @@ public class LiveStockFragment extends Fragment implements View.OnClickListener,
                                 WMSExceptionMessage owmsExceptionMessage = null;
 
                                 for (int i = 0; i < _lExceptions.size(); i++) {
-
                                     owmsExceptionMessage = new WMSExceptionMessage(_lExceptions.get(i).entrySet());
-
-
                                 }
 
                                 recyclerViewLiveStock.setAdapter(null);
@@ -1152,7 +1667,6 @@ public class LiveStockFragment extends Fragment implements View.OnClickListener,
                                 if (_lInventory.size() > 0) {
                                     InventoryDTO inventorydto = null;
                                     for (int i = 0; i < _lInventory.size(); i++) {
-
                                         inventorydto = new InventoryDTO(_lInventory.get(i).entrySet());
                                         lstInventory.add(inventorydto);
                                     }
