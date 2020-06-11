@@ -1058,10 +1058,12 @@ public class LiveStockFragment extends Fragment implements View.OnClickListener,
                                     tvScanLocation.setText(scannedData);
                                     scannedLocation = scannedData;
                                 } else{
+
                                     tvScanLocation.setText("");
 
                                     cvScanLocation.setCardBackgroundColor(getResources().getColor(R.color.white));
                                     ivScanLocation.setImageResource(R.drawable.warning_img);
+
                                     common.showUserDefinedAlertType(errorMessages.EMC_0010, getActivity(), getContext(), "Warning");
                                 }
                             }else{

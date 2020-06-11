@@ -194,6 +194,9 @@ public class OutbountDTO {
     @SerializedName("AccountID")
     private String AccountID;
 
+    @SerializedName("AvailableQty")
+    private String AvailableQty;
+
 
     public OutbountDTO() {
 
@@ -512,9 +515,11 @@ public class OutbountDTO {
                     }
                     break;
 
-
-
-
+              case "AvailableQty":
+                    if(entry.getValue()!=null) {
+                        this.setAvailableQty(entry.getValue().toString());
+                    }
+                    break;
 
             }
         }
@@ -1004,4 +1009,14 @@ public class OutbountDTO {
     public void setMRP(String MRP) {
         this.MRP = MRP;
     }
+
+
+    public String getAvailableQty() {
+        return AvailableQty;
+    }
+
+    public void setAvailableQty(String availableQty) {
+        AvailableQty = availableQty;
+    }
+
 }

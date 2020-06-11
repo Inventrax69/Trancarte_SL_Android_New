@@ -71,7 +71,7 @@ public class OBDPickingDetailsFragment extends Fragment implements View.OnClickL
     private View rootView;
     ImageView ivScanLocation, ivScanPallet, ivScanPalletTo, tvScanRSN, ivScanRSN, ivScanRSNnew;
     Button btnMaterialSkip, btnPick, btn_Skip, btnOk, btnCloseSkip, btnClosefinal;
-    TextView lblPickListNo, lblScannedSku;
+    TextView lblPickListNo, lblScannedSku,lblAvailableQty;
     TextView lblSKuNo, lblLocationNo, lblMRP, lblrsnNoNew, lblMfgDate, lblExpDate, lblProjectRefNo, lblassignedQty, lblserialNo, lblBatchNo;
     CardView cvScanPallet, cvScanPalletTo, cvScanRSN, cvScanNewRSN, cvScanLocation;
     EditText lblReceivedQty;
@@ -154,6 +154,7 @@ public class OBDPickingDetailsFragment extends Fragment implements View.OnClickL
         lblSKuNo = (TextView) rootView.findViewById(R.id.lblSKUSuggested);
         lblLocationNo = (TextView) rootView.findViewById(R.id.lblLocationSuggested);
         lblMRP = (TextView) rootView.findViewById(R.id.lblMRP);
+        lblAvailableQty = (TextView) rootView.findViewById(R.id.lblAvailableQty);
 
         etPallet = (EditText) rootView.findViewById(R.id.etPallet);
 
@@ -1060,6 +1061,8 @@ public class OBDPickingDetailsFragment extends Fragment implements View.OnClickL
                                     lblLocationNo.setText(oOutboundDTO.getLocation());
                                     etPallet.setText(oOutboundDTO.getPalletNo());
                                     pickedQty = oOutboundDTO.getPickedQty();
+                                    if(oOutboundDTO.getAvailableQty()!=null)
+                                        lblAvailableQty.setText(oOutboundDTO.getAvailableQty().split("[.]")[0]);
 
                                     if(lblLocationNo.getText().toString().equals("")){
                                         common.showUserDefinedAlertType(errorMessages.EMC_0063 + lblPickListNo.getText().toString(), getActivity(), getContext(), "Success");
@@ -1076,9 +1079,6 @@ public class OBDPickingDetailsFragment extends Fragment implements View.OnClickL
                                     lblProjectRefNo.setText(oOutboundDTO.getProjectNo());
                                     lblserialNo.setText(oOutboundDTO.getSerialNo());
                                     lblMRP.setText(oOutboundDTO.getMRP());
-
-
-
 
                                     cvScanRSN.setCardBackgroundColor(getResources().getColor(R.color.skuColor));
                                     ivScanRSN.setImageResource(R.drawable.fullscreen_img);
